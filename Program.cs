@@ -1,13 +1,42 @@
-﻿using Haxee.MQTTConsumer.DTOs;
-using MQTTnet.Client.Receiving;
-using System.Security.Claims;
-using System.Text;
-
-class Program
+﻿class Program
 {
-    private static string _currentYearTopic = "2023/#";
+    private static CurrentYear _currentYear = new CurrentYear()
+    {
+        BrokerIP = "192.168.0.244",
+        ClientName = "HaxeeConsumer",
+        GlobalTopic = "2023/#",
+        BrokerPort = 1883,
+        Year = 2023
+    };
+
     static void Main(string[] args)
     {
+        bool quit = false;
+
+        while (!quit)
+        {
+            int option = MenuService.MainMenu();
+
+            switch (option)
+            {
+                case 1:
+                    break;
+                case 2:
+                    MenuService.CurrentSetup(_currentYear);
+                    break;
+                case 3:
+                    break;
+                case 4:
+                    break;
+                case 5:
+                    quit = true;
+                    break;
+            }
+        }
+
+
+        //CurrentYear currentYear = SetupService.SetupCurrentYear();
+
         Log.Logger = new LoggerConfiguration()
             .MinimumLevel.Debug()
             .Enrich.FromLogContext()
@@ -16,8 +45,8 @@ class Program
 
         // Creates a new client
         MqttClientOptionsBuilder builder = new MqttClientOptionsBuilder()
-                                    .WithClientId("HaxeeConsumer")
-                                    .WithTcpServer("192.168.0.244", 1883);
+                                    .WithClientId(_currentYear.ClientName)
+                                    .WithTcpServer(_currentYear.BrokerIP, _currentYear.BrokerPort);
 
         // Create client options objects
         ManagedMqttClientOptions options = new ManagedMqttClientOptionsBuilder()
@@ -45,7 +74,7 @@ class Program
 
 
         _mqttClient.SubscribeAsync(new MqttTopicFilterBuilder()
-            .WithTopic(_currentYearTopic)
+            .WithTopic(_currentYear.GlobalTopic)
             .Build()).GetAwaiter().GetResult();
 
         _mqttClient.UseApplicationMessageReceivedHandler(e =>
